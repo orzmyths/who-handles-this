@@ -1,0 +1,28 @@
+kind = "slides"
+previewPath = "/who-handles-this-city-pitch/"
+title = "Who Handles This? — City of San José"
+description = "An editable five-slide City of San José product-introduction deck for Who Handles This?; presents a resident problem, verified prototype flow, documented AI failure and mitigation, privacy deployment gate, and evidence limits."
+version = "1.0.0"
+id = "artifacts/who-handles-this-city-pitch"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/who-handles-this-city-pitch/" ]
+localPort = 20034
+
+[services.development]
+run = "pnpm --filter @workspace/who-handles-this-city-pitch run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/who-handles-this-city-pitch", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/who-handles-this-city-pitch/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20034"
+BASE_PATH = "/who-handles-this-city-pitch/"

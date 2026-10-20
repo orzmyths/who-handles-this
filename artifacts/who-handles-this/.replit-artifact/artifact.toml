@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Who Handles This?"
+description = "A simple San José resident guide that routes government notices and neighborhood issues to the right city, county, or state agency using transparent local keyword rules."
+version = "1.0.0"
+id = "artifacts/who-handles-this"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21492
+
+[services.development]
+run = "pnpm --filter @workspace/who-handles-this run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/who-handles-this", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/who-handles-this/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21492"
+BASE_PATH = "/"

@@ -1,0 +1,239 @@
+{
+  "checkedAt": "2026-10-05T04:28:02.824Z",
+  "methodology": "Supplementary live API check of the exact Spanish demonstration input; not added to the 22-case corpus metrics.",
+  "description": "Recibí una carta sobre mis beneficios de desempleo y mi factura de basura.",
+  "language": "es",
+  "httpStatus": 200,
+  "passed": true,
+  "output": {
+    "status": "routed",
+    "issue_type": "multi_issue",
+    "government_level_hint": "unknown",
+    "location_hint": null,
+    "notice_agency_mentioned": null,
+    "key_facts": [
+      "beneficios de desempleo",
+      "factura de basura"
+    ],
+    "missing_information": [],
+    "candidate_agency_ids": [
+      "ca-edd",
+      "sj-environmental-services"
+    ],
+    "needs_clarification": false,
+    "clarifying_question": null,
+    "selected": {
+      "id": "ca-edd",
+      "name": "California Employment Development Department (EDD)",
+      "level": "State",
+      "scope": "California unemployment, disability and paid-family-leave benefits",
+      "includedExamples": [
+        "unemployment",
+        "disability benefits",
+        "paid family leave",
+        "EDD claim"
+      ],
+      "exclusions": [
+        "county CalFresh",
+        "DMV registration",
+        "property taxes"
+      ],
+      "jurisdictionFacts": [
+        "California statewide agency"
+      ],
+      "residentBoundary": "Jurisdiction: California statewide unemployment, disability and paid-family-leave benefits.",
+      "officialUrl": "https://edd.ca.gov/",
+      "officialTitle": "Employment Development Department | State of California",
+      "lastReviewed": "2026-09-22",
+      "reviewAfterDays": 180,
+      "staleTestFlag": false,
+      "safeNextStepTemplate": "Check the claim or notice through the California EDD website and follow its deadline.",
+      "clarifyingQuestions": [
+        "Is the notice about unemployment, disability or paid family leave?"
+      ],
+      "todoManuallyVerify": [],
+      "keywords": [
+        "unemployment",
+        "unemployment benefits",
+        "disability benefits",
+        "paid family leave",
+        "edd"
+      ],
+      "contactOptions": [
+        {
+          "kind": "phone",
+          "label": "Unemployment Insurance — English and Spanish",
+          "value": "+18003005616",
+          "hours": "Monday–Friday, 8 a.m.–5 p.m. Pacific; except state holidays",
+          "sourceUrl": "https://edd.ca.gov/en/about_edd/contact_edd",
+          "lastReviewed": "2026-10-04",
+          "reviewAfterDays": 180
+        },
+        {
+          "kind": "phone",
+          "label": "Disability Insurance — English",
+          "value": "+18004803287",
+          "hours": "Monday–Friday, 8 a.m.–5 p.m. Pacific; except state holidays",
+          "note": "Spanish: 1-866-658-8846. For other languages, press 3 for free interpreter services.",
+          "sourceUrl": "https://edd.ca.gov/en/about_edd/contact_edd",
+          "lastReviewed": "2026-10-04",
+          "reviewAfterDays": 180
+        },
+        {
+          "kind": "phone",
+          "label": "Paid Family Leave — English",
+          "value": "+18772384373",
+          "hours": "Monday–Friday, 8 a.m.–5 p.m. Pacific; except state holidays",
+          "note": "Spanish: 1-877-379-3819. For other languages, press 3 for free interpreter services.",
+          "sourceUrl": "https://edd.ca.gov/en/about_edd/contact_edd",
+          "lastReviewed": "2026-10-04",
+          "reviewAfterDays": 180
+        },
+        {
+          "kind": "online",
+          "label": "Contact EDD — myEDD, claim help and program contacts",
+          "value": "https://edd.ca.gov/en/about_edd/contact_edd",
+          "sourceUrl": "https://edd.ca.gov/en/about_edd/contact_edd",
+          "lastReviewed": "2026-10-04",
+          "reviewAfterDays": 180
+        }
+      ]
+    },
+    "explanation": "La agencia correcta para este tema es California Employment Development Department (EDD). Cubre beneficios de desempleo, incapacidad y paid family leave en todo el estado de California. Su sitio oficial es https://edd.ca.gov/.",
+    "nextStep": "Check the claim or notice through the California EDD website and follow its deadline.",
+    "confidence": "Supported match",
+    "validationChecks": [
+      {
+        "name": "service_evidence",
+        "passed": true,
+        "detail": "Service/action categories grounded in exact resident quotes; this verifies evidence presence, not semantic correctness."
+      },
+      {
+        "name": "allowlist",
+        "passed": true,
+        "detail": "Every recommended agency is in the curated allowlist."
+      },
+      {
+        "name": "source_freshness",
+        "passed": true,
+        "detail": "Every recommended source was reviewed within 180 days."
+      },
+      {
+        "name": "explanation_generation",
+        "passed": true,
+        "detail": "Generated from selected agency record."
+      }
+    ],
+    "clarificationRound": 0,
+    "serviceRequests": [
+      {
+        "serviceFamily": "unemployment",
+        "requestedAction": "ask_information",
+        "supportingText": "beneficios de desempleo",
+        "uncertainty": "none"
+      },
+      {
+        "serviceFamily": "garbage_recycling",
+        "requestedAction": "ask_information",
+        "supportingText": "factura de basura",
+        "uncertainty": "none"
+      }
+    ],
+    "additionalRecommendations": [
+      {
+        "selected": {
+          "id": "sj-environmental-services",
+          "name": "San José Environmental Services",
+          "level": "City",
+          "scope": "City garbage, recycling and residential collection services",
+          "includedExamples": [
+            "garbage",
+            "recycling",
+            "missed pickup",
+            "yard trimmings",
+            "garbage or recycling bill"
+          ],
+          "exclusions": [
+            "county taxes",
+            "state benefits",
+            "private hauling"
+          ],
+          "jurisdictionFacts": [
+            "City of San José only"
+          ],
+          "residentBoundary": "Jurisdiction: City of San José residential collection services.",
+          "officialUrl": "https://www.sanjoseca.gov/your-government/departments-offices/environmental-services",
+          "officialTitle": "Environmental Services | City of San José",
+          "lastReviewed": "2026-09-22",
+          "reviewAfterDays": 180,
+          "staleTestFlag": false,
+          "safeNextStepTemplate": "Report the collection issue through San José's service request page and include the service address.",
+          "clarifyingQuestions": [
+            "Is the address inside San José?",
+            "Was the pickup missed or is this another service?"
+          ],
+          "todoManuallyVerify": [],
+          "keywords": [
+            "garbage",
+            "recycling",
+            "recycle",
+            "trash pickup",
+            "trash collection",
+            "trash bill",
+            "garbage bill",
+            "recycling bill",
+            "missed pickup",
+            "missed collection",
+            "yard trimmings"
+          ],
+          "contactOptions": [
+            {
+              "kind": "phone",
+              "label": "Residential recycling and garbage service / City Contact Center",
+              "value": "+14085353500",
+              "hours": "24 hours a day, seven days a week (City Contact Center)",
+              "hoursSourceUrl": "https://www.sanjoseca.gov/your-government/departments-offices/information-technology/customer-service",
+              "note": "Missed collections, damaged containers, service issues and container size changes. For other inquiries, contact your collection company.",
+              "sourceUrl": "https://www.sanjoseca.gov/your-government/departments-offices/environmental-services/recycling-garbage/residents/request-residential-garbage-and-recycling-services",
+              "lastReviewed": "2026-10-04",
+              "reviewAfterDays": 180
+            },
+            {
+              "kind": "online",
+              "label": "San José 311 — residential recycling and garbage requests",
+              "value": "https://www.sanjoseca.gov/311",
+              "sourceUrl": "https://www.sanjoseca.gov/your-government/departments-offices/environmental-services/recycling-garbage/residents/request-residential-garbage-and-recycling-services",
+              "lastReviewed": "2026-10-04",
+              "reviewAfterDays": 180
+            },
+            {
+              "kind": "online",
+              "label": "City Contact Center hours and contact information",
+              "value": "https://www.sanjoseca.gov/your-government/departments-offices/information-technology/customer-service",
+              "sourceUrl": "https://www.sanjoseca.gov/your-government/departments-offices/information-technology/customer-service",
+              "lastReviewed": "2026-10-04",
+              "reviewAfterDays": 180
+            }
+          ]
+        },
+        "explanation": "San José Environmental Services covers City garbage, recycling and residential collection services. Examples: garbage, recycling, missed pickup, yard trimmings, garbage or recycling bill. Source: Environmental Services | City of San José, reviewed 2026-09-22.",
+        "nextStep": "Contact San José Environmental Services through its official website about your garbage or recycling bill; have the bill ready.",
+        "communication": {
+          "sourceUrl": "https://www.sanjoseca.gov/residents/customer-service",
+          "lastReviewed": "2026-10-04",
+          "channelNote": "No issue-specific department email is verified here. Use San José 311 for non-emergency city services; for collection service requests, follow the official collection instructions and contact your collection company. Do not submit billing or account details to this prototype.",
+          "fallbackUrl": "https://www.sanjoseca.gov/311",
+          "fallbackLabel": "Open San José 311"
+        },
+        "confidence": "Supported match"
+      }
+    ],
+    "communication": {
+      "sourceUrl": "https://edd.ca.gov/en/about_edd/contact_edd/",
+      "lastReviewed": "2026-10-04",
+      "channelNote": "No public email for benefit claims is verified here. Use the official Contact EDD page to choose your program's secure online or phone channel. Follow your notice deadlines; this app does not file claims or appeals.",
+      "fallbackUrl": "https://edd.ca.gov/en/about_edd/contact_edd/",
+      "fallbackLabel": "Choose an official EDD online or phone channel"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@workspace/scripts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:access-control": "tsx --test ./access-separation.test.ts",
+    "test:contact-source-review": "tsx --test ./contact-source-review.test.ts ./approved-contact-correction.test.ts",
+    "agency-preflight": "tsx ./src/agency-preflight.ts",
+    "test:email-localization": "tsx --test ./email-localization.test.ts",
+    "test:contact-localization": "tsx --test ./contact-localization.test.ts",
+    "test:ui-translations": "tsx --test ./ui-translations.test.ts",
+    "test:service-evidence": "tsx --test ./service-evidence.test.ts ./routing-wording.test.ts",
+    "hello": "tsx ./src/hello.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsx": "catalog:"
+  }
+}

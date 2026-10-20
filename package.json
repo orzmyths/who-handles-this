@@ -1,0 +1,26 @@
+{
+  "name": "workspace",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
+    "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "preflight:agency": "pnpm --filter @workspace/scripts run agency-preflight",
+    "demo:ready": "pnpm run preflight:agency && pnpm run typecheck && pnpm run test:access-control && pnpm run test:contact-sources && pnpm run test:routing-safety",
+    "test:contact-sources": "pnpm --filter @workspace/scripts run test:contact-source-review",
+    "test:access-control": "pnpm --filter @workspace/scripts run test:access-control",
+    "test:service-evidence": "pnpm --filter @workspace/scripts run test:service-evidence",
+    "evaluate:civic": "node scripts/civic-evaluation.mjs && node scripts/civic-demo-check.mjs && node scripts/civic-readiness-report.mjs",
+    "test:routing-safety": "pnpm --filter @workspace/scripts run test:ui-translations && pnpm run test:service-evidence && pnpm --filter @workspace/api-server build && node scripts/routing-safety.mjs",
+    "typecheck:libs": "tsc --build",
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
+  },
+  "private": true,
+  "dependencies": {
+    "@replit/connectors-sdk": "^0.4.3"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.6",
+    "typescript": "~5.9.3"
+  }
+}

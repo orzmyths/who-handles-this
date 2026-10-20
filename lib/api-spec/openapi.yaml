@@ -1,0 +1,606 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: access
+  - name: routing
+  - name: staff
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /translate:
+    post:
+      operationId: translateText
+      tags: [translation]
+      summary: Translate one or more text values
+      description: Translates civic-assistance text with the project's self-hosted LibreTranslate service.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TranslationInput"
+      responses:
+        "200":
+          description: Translated text in the same order as the request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TranslationResult"
+        "400":
+          description: Invalid translation request
+        "502":
+          description: Translation provider error
+  /access/verify:
+    post:
+      operationId: verifyAccess
+      tags: [access]
+      deprecated: true
+      description: Retired shared-passcode endpoint. Sign in with Clerk instead.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AccessVerification" }
+      responses:
+        "200": { description: Access status, content: { application/json: { schema: { $ref: "#/components/schemas/AccessStatus" } } } }
+        "410": { description: Shared passcode access has been retired }
+        "429": { description: Rate limited }
+  /access/status:
+    get:
+      operationId: getAccessStatus
+      tags: [access]
+      responses:
+        "200": { description: Access status, content: { application/json: { schema: { $ref: "#/components/schemas/AccessStatus" } } } }
+  /access/dev-sign-in:
+    post:
+      operationId: developerSignIn
+      tags: [access]
+      summary: Shared demo sign-in to a restricted resident test account in preview or production
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DeveloperCredentials" }
+      responses:
+        "200": { description: Short-lived single-use Clerk sign-in ticket, content: { application/json: { schema: { $ref: "#/components/schemas/DeveloperTicket" } } } }
+        "400": { description: Invalid passcode }
+        "404": { description: Invalid or mismatched authentication environment }
+        "429": { description: Too many attempts }
+        "503": { description: Developer sign-in is not configured or unavailable }
+  /staff/legacy-reports:
+    get:
+      operationId: listLegacyReports
+      tags: [staff]
+      summary: List preserved unowned reports for approved staff only
+      responses:
+        "200": { description: Unassigned legacy reports, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/RoutingHistoryEntry" } } } } }
+        "401": { description: Sign in required }
+        "403": { description: Approved staff only }
+  /routing/analyze:
+    post:
+      operationId: analyzeRouting
+      tags: [routing]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RoutingAnalysis" }
+      responses:
+        "200": { description: Routing result, content: { application/json: { schema: { $ref: "#/components/schemas/RoutingResult" } } } }
+        "400": { description: Invalid or unsafe input }
+        "429": { description: Rate limited }
+  /routing/evaluate:
+    post:
+      operationId: evaluateRouting
+      tags: [routing]
+      description: Prototype evaluation using the same live AI and safeguards, without saving resident history or creating review cases.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RoutingAnalysis" }
+      responses:
+        "200": { description: Unsaved evaluation result, content: { application/json: { schema: { $ref: "#/components/schemas/RoutingResult" } } } }
+        "401": { description: Passcode access required }
+        "429": { description: Rate limited }
+  /routing/history:
+    get:
+      operationId: listRoutingHistory
+      tags: [routing]
+      summary: List saved routing history
+      responses:
+        "200":
+          description: Saved routing results, newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/RoutingHistoryEntry" }
+        "401": { description: Passcode access is required }
+  /staff/contacts/correct:
+    post:
+      operationId: correctApprovedContact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ApprovedContactCorrection" }
+      responses:
+        "200": { description: Audited manually verified correction, content: { application/json: { schema: { $ref: "#/components/schemas/ApprovedContactRecord" } } } }
+        "400": { description: Invalid correction or unofficial source }
+        "401": { description: Staff access required }
+        "404": { description: Unknown approved contact }
+        "409": { description: Contact or source revision changed; reopen and verify again }
+  /staff/contact-sources:
+    get:
+      operationId: listContactSourceReviews
+      tags: [staff]
+      responses:
+        "200": { description: Official contact source review queue, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/ContactSourceReview" } } } } }
+        "401": { description: Staff access required }
+  /staff/contact-sources/check:
+    post:
+      operationId: checkContactSources
+      tags: [staff]
+      responses:
+        "200": { description: Updated comparisons, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/ContactSourceReview" } } } } }
+        "401": { description: Staff access required }
+  /staff/contact-sources/confirm:
+    post:
+      operationId: confirmContactSource
+      tags: [staff]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ContactSourceConfirmation" }
+      responses:
+        "200": { description: Manually confirmed comparison baseline, content: { application/json: { schema: { $ref: "#/components/schemas/ContactSourceReview" } } } }
+        "400": { description: Invalid review }
+        "401": { description: Staff access required }
+        "409": { description: Source changed or inaccessible }
+  /staff/cases:
+    get:
+      operationId: listStaffCases
+      tags: [staff]
+      responses:
+        "200": { description: Cases, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/StaffCase" } } } } }
+  /staff/cases/reset:
+    get:
+      operationId: getDemoStaffResetStatus
+      tags: [staff]
+      responses:
+        "200": { description: Latest demo reset, content: { application/json: { schema: { $ref: "#/components/schemas/ResetStaffCasesStatus" } } } }
+        "401": { description: Staff access required }
+    post:
+      operationId: resetDemoStaffCases
+      tags: [staff]
+      responses:
+        "200": { description: Reset result, content: { application/json: { schema: { $ref: "#/components/schemas/ResetStaffCasesResponse" } } } }
+        "401": { description: Staff access required }
+  /staff/cases/{caseId}:
+    get:
+      operationId: getStaffCase
+      tags: [staff]
+      parameters: [{ name: caseId, in: path, required: true, schema: { type: string } }]
+      responses:
+        "200": { description: Case, content: { application/json: { schema: { $ref: "#/components/schemas/StaffCase" } } } }
+        "404": { description: Not found }
+  /staff/cases/{caseId}/actions:
+    post:
+      operationId: actOnStaffCase
+      tags: [staff]
+      parameters: [{ name: caseId, in: path, required: true, schema: { type: string } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CaseAction" }
+      responses:
+        "200": { description: Updated case, content: { application/json: { schema: { $ref: "#/components/schemas/StaffCase" } } } }
+        "400": { description: Invalid action }
+        "404": { description: Not found }
+        "409": { description: Case changed since it was loaded }
+  /staff/cases/report-wrong:
+    post:
+      operationId: reportWrongRouting
+      tags: [staff]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/WrongRoutingReport" }
+      responses:
+        "200": { description: Report accepted, content: { application/json: { schema: { $ref: "#/components/schemas/ReportReceipt" } } } }
+components:
+  schemas:
+    ApprovedContactEvidence:
+      type: object
+      required: [kind, label, value, sourceUrl, lastReviewed, reviewAfterDays]
+      properties:
+        kind: { type: string, enum: [phone, online] }
+        label: { type: string, minLength: 1, maxLength: 500 }
+        value: { type: string, minLength: 1, maxLength: 2000 }
+        hours: { type: string, maxLength: 1000 }
+        hoursSourceUrl: { type: string, maxLength: 2000 }
+        note: { type: string, maxLength: 2000 }
+        sourceUrl: { type: string, maxLength: 2000 }
+        lastReviewed: { type: string }
+        reviewAfterDays: { type: integer, enum: [180] }
+    ApprovedContactAudit:
+      type: object
+      required: [reviewedAt, reviewer, reason, sourceVerified, purposeVerified, before, after]
+      properties:
+        reviewedAt: { type: string }
+        reviewer: { type: string }
+        reason: { type: string }
+        sourceVerified: { type: boolean }
+        purposeVerified: { type: boolean }
+        before: { $ref: "#/components/schemas/ApprovedContactEvidence" }
+        after: { $ref: "#/components/schemas/ApprovedContactEvidence" }
+    ApprovedContactRecord:
+      type: object
+      required: [agencyId, agencyName, contactId, revision, contact, history]
+      properties:
+        agencyId: { type: string }
+        agencyName: { type: string }
+        contactId: { type: string }
+        revision: { type: integer }
+        contact: { $ref: "#/components/schemas/ApprovedContactEvidence" }
+        history: { type: array, items: { $ref: "#/components/schemas/ApprovedContactAudit" } }
+    ApprovedContactCorrection:
+      type: object
+      required: [contactId, revision, reviewedSourceUrl, sourceRevision, label, value, sourceUrl, hours, hoursSourceUrl, note, reason, sourceVerified, purposeVerified]
+      properties:
+        contactId: { type: string }
+        revision: { type: integer, minimum: 0 }
+        reviewedSourceUrl: { type: string }
+        sourceRevision: { type: integer, minimum: 0 }
+        label: { type: string, minLength: 1, maxLength: 500 }
+        value: { type: string, minLength: 1, maxLength: 2000 }
+        sourceUrl: { type: string, maxLength: 2000 }
+        hours: { type: string, maxLength: 1000 }
+        hoursSourceUrl: { type: string, maxLength: 2000 }
+        note: { type: string, maxLength: 2000 }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+        sourceVerified: { type: boolean, enum: [true] }
+        purposeVerified: { type: boolean, enum: [true] }
+    ContactSourceConfirmation:
+      type: object
+      required: [sourceUrl, revision, reason]
+      properties:
+        sourceUrl: { type: string }
+        revision: { type: integer }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+    ContactSourceReview:
+      type: object
+      required: [sourceUrl, agencyNames, revision, status, accessStatus, detail, checkedAt, baselineReviewedAt, overdue, affectedContacts, approvedContacts, baselineText, candidateText, canConfirm, history]
+      properties:
+        approvedContacts: { type: array, items: { $ref: "#/components/schemas/ApprovedContactRecord" } }
+        sourceUrl: { type: string }
+        agencyNames: { type: array, items: { type: string } }
+        revision: { type: integer }
+        status: { type: string, enum: [changed, baseline_needed, overdue, current] }
+        accessStatus: { type: string, enum: [ok, restricted, unavailable, unchecked] }
+        detail: { type: string }
+        checkedAt: { type: string, nullable: true }
+        baselineReviewedAt: { type: string, nullable: true }
+        overdue: { type: boolean }
+        canConfirm: { type: boolean }
+        baselineText: { type: string, nullable: true }
+        candidateText: { type: string, nullable: true }
+        affectedContacts:
+          type: array
+          items:
+            type: object
+            required: [agencyName, label, value, hours, note, lastReviewed]
+            properties:
+              agencyName: { type: string }
+              label: { type: string }
+              value: { type: string }
+              hours: { type: string, nullable: true }
+              note: { type: string, nullable: true }
+              lastReviewed: { type: string }
+        history:
+          type: array
+          items:
+            type: object
+            required: [reviewedAt, reason, hash]
+            properties:
+              reviewedAt: { type: string }
+              reason: { type: string }
+              hash: { type: string }
+              reviewer: { type: string }
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    TranslationInput:
+      type: object
+      properties:
+        text:
+          type: array
+          minItems: 1
+          maxItems: 20
+          items:
+            type: string
+            minLength: 1
+            maxLength: 5000
+        targetLanguage:
+          type: string
+          minLength: 2
+          maxLength: 10
+        sourceLanguage:
+          type: string
+          minLength: 2
+          maxLength: 10
+      required:
+        - text
+        - targetLanguage
+    TranslationResult:
+      type: object
+      properties:
+        translatedText:
+          type: array
+          items:
+            type: string
+        detectedSourceLanguage:
+          type: ["string", "null"]
+      required:
+        - translatedText
+        - detectedSourceLanguage
+    AccessVerification:
+      type: object
+      required: [passcode]
+      properties:
+        passcode: { type: string, minLength: 1, maxLength: 256 }
+    DeveloperCredentials:
+      type: object
+      required: [passcode, demoAcknowledged]
+      properties:
+        passcode: { type: string, minLength: 1, maxLength: 128 }
+        demoAcknowledged: { type: boolean, enum: [true] }
+    DeveloperTicket:
+      type: object
+      required: [ticket]
+      properties:
+        ticket: { type: string }
+    AccessStatus:
+      type: object
+      required: [verified, demo]
+      properties:
+        verified: { type: boolean }
+        demo: { type: boolean }
+        userId: { type: [string, "null"] }
+        staff: { type: boolean }
+    RoutingAnalysis:
+      type: object
+      required: [description, noticeText, language]
+      properties:
+        description: { type: string, minLength: 1, maxLength: 2000 }
+        noticeText: { type: ["string", "null"], maxLength: 2000 }
+        language: { type: string, minLength: 2, maxLength: 20 }
+        clarificationHistory: { type: array, maxItems: 2, items: { type: string, maxLength: 2000 } }
+        simulateAiFailure: { type: boolean }
+        simulateStaleSource: { type: boolean }
+    RoutingHistoryInput:
+      type: object
+      required: [description, noticeText, language]
+      properties:
+        description: { type: string, minLength: 1, maxLength: 2000 }
+        noticeText: { type: ["string", "null"], maxLength: 2000 }
+        language: { type: string, minLength: 2, maxLength: 20 }
+        clarificationHistory: { type: array, maxItems: 2, items: { type: string, maxLength: 2000 } }
+    RoutingHistoryEntry:
+      type: object
+      required: [id, createdAt, input, output]
+      properties:
+        id: { type: integer }
+        createdAt: { type: string, format: date-time }
+        input: { $ref: "#/components/schemas/RoutingHistoryInput" }
+        output: { $ref: "#/components/schemas/RoutingResult" }
+    AgencyContact:
+      type: object
+      required: [kind, label, value, sourceUrl, lastReviewed, reviewAfterDays]
+      properties:
+        kind: { type: string, enum: [phone, online] }
+        label: { type: string }
+        value: { type: string }
+        hours: { type: string }
+        hoursSourceUrl: { type: string, format: uri }
+        note: { type: string }
+        sourceUrl: { type: string, format: uri }
+        lastReviewed: { type: string, format: date }
+        reviewAfterDays: { type: integer, enum: [180] }
+    Agency:
+      type: object
+      required: [id, name, scope, includedExamples, exclusions, jurisdictionFacts, residentBoundary, officialUrl, officialTitle, lastReviewed, reviewAfterDays, staleTestFlag, safeNextStepTemplate, clarifyingQuestions, todoManuallyVerify]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        level: { type: string, enum: [City, County, State] }
+        scope: { type: string }
+        includedExamples: { type: array, items: { type: string } }
+        exclusions: { type: array, items: { type: string } }
+        jurisdictionFacts: { type: array, items: { type: string } }
+        residentBoundary: { type: string }
+        officialUrl: { type: string, format: uri }
+        officialTitle: { type: string }
+        lastReviewed: { type: string, format: date }
+        reviewAfterDays: { type: integer }
+        staleTestFlag: { type: boolean }
+        safeNextStepTemplate: { type: string }
+        clarifyingQuestions: { type: array, items: { type: string } }
+        todoManuallyVerify: { type: array, items: { type: string } }
+        contactOptions:
+          description: Verified purpose-specific contacts. Optional for historical results saved before contacts were introduced.
+          type: array
+          items: { $ref: "#/components/schemas/AgencyContact" }
+    DepartmentEmailDraft:
+      type: object
+      required: [recipient, subject, body]
+      properties:
+        recipient: { type: string, format: email }
+        subject: { type: string }
+        body: { type: string }
+    DepartmentCommunication:
+      type: object
+      required: [sourceUrl, lastReviewed, channelNote, fallbackUrl, fallbackLabel]
+      properties:
+        emailDraft: { $ref: "#/components/schemas/DepartmentEmailDraft" }
+        sourceUrl: { type: string, format: uri }
+        lastReviewed: { type: string }
+        channelNote: { type: string }
+        fallbackUrl: { type: string, format: uri }
+        fallbackLabel: { type: string }
+    RoutingRecommendation:
+      type: object
+      required: [selected, explanation, nextStep, confidence]
+      properties:
+        selected: { $ref: "#/components/schemas/Agency" }
+        explanation: { type: string }
+        nextStep: { type: string }
+        confidence: { type: string }
+        communication: { $ref: "#/components/schemas/DepartmentCommunication" }
+    ServiceRequestEvidence:
+      type: object
+      required: [serviceFamily, requestedAction, supportingText, uncertainty]
+      properties:
+        serviceFamily: { type: string, enum: [garbage_recycling, private_property_conditions, property_tax, county_benefits, unemployment, driver_license, vehicle_registration, public_street, unknown] }
+        requestedAction: { type: string, enum: [renew, replace, report_problem, dispute_bill, check_status, apply, ask_information, unknown] }
+        supportingText: { type: string }
+        uncertainty: { type: string, enum: [none, ambiguous, missing_context, outside_scope] }
+    ReviewOutcome:
+      type: object
+      required: [caseId, status, message, reason, updatedAt, agency, nextStep]
+      properties:
+        caseId: { type: string }
+        status: { type: string }
+        message: { type: string }
+        reason: { type: string }
+        updatedAt: { type: string, format: date-time }
+        agency: { anyOf: [{ $ref: "#/components/schemas/Agency" }, { type: "null" }] }
+        nextStep: { type: ["string", "null"] }
+    RoutingResult:
+      type: object
+      required: [status, issue_type, government_level_hint, location_hint, notice_agency_mentioned, key_facts, missing_information, candidate_agency_ids, needs_clarification, clarifying_question, selected, explanation, nextStep, confidence, validationChecks, clarificationRound]
+      properties:
+        status: { type: string, enum: [routed, clarify, review, blocked] }
+        issue_type: { type: ["string", "null"] }
+        government_level_hint: { type: string, enum: [city, county, state, unknown] }
+        location_hint: { type: ["string", "null"] }
+        notice_agency_mentioned: { type: ["string", "null"] }
+        key_facts: { type: array, items: { type: string } }
+        missing_information: { type: array, items: { type: string } }
+        candidate_agency_ids: { type: array, items: { type: string } }
+        needs_clarification: { type: boolean }
+        clarifying_question: { type: ["string", "null"] }
+        selected: { anyOf: [{ $ref: "#/components/schemas/Agency" }, { type: "null" }] }
+        additionalRecommendations: { type: array, items: { $ref: "#/components/schemas/RoutingRecommendation" } }
+        communication: { $ref: "#/components/schemas/DepartmentCommunication" }
+        explanation: { type: string }
+        nextStep: { type: ["string", "null"] }
+        confidence: { type: string }
+        validationChecks: { type: array, items: { $ref: "#/components/schemas/ValidationCheck" } }
+        clarificationRound: { type: integer }
+        historyId: { type: integer }
+        reviewCaseId: { type: string }
+        serviceRequests: { type: array, items: { $ref: "#/components/schemas/ServiceRequestEvidence" } }
+        reviewOutcome: { $ref: "#/components/schemas/ReviewOutcome" }
+    StaffCase:
+      type: object
+      required: [id, revision, submittedAt, reviewReason, status, possibleAgencyIds, sourceFreshnessWarning, residentDescription, extractedFacts, missingInformation, aiSuggestedAgencyId, officialEvidence, validationConflicts, riskFlags, clarificationHistory, residentOutcomePreview, auditHistory]
+      properties:
+        id: { type: string }
+        revision: { type: integer, minimum: 0 }
+        submittedAt: { type: string, format: date-time }
+        reviewReason: { type: string }
+        status: { type: string }
+        possibleAgencyIds: { type: array, items: { type: string } }
+        sourceFreshnessWarning: { type: boolean }
+        residentDescription: { type: string }
+        extractedFacts: { type: array, items: { type: string } }
+        missingInformation: { type: array, items: { type: string } }
+        aiSuggestedAgencyId: { type: ["string", "null"] }
+        officialEvidence: { type: array, items: { type: string } }
+        validationConflicts: { type: array, items: { type: string } }
+        riskFlags: { type: array, items: { type: string } }
+        clarificationHistory: { type: array, items: { type: string } }
+        residentOutcomePreview: { type: string }
+        auditHistory: { type: array, items: { $ref: "#/components/schemas/AuditEntry" } }
+        routingHistoryId: { type: integer }
+    ValidationCheck:
+      type: object
+      required: [name, passed, detail]
+      properties:
+        name: { type: string }
+        passed: { type: boolean }
+        detail: { type: string }
+    AuditEntry:
+      type: object
+      required: [timestamp, action, beforeStatus, afterStatus, reviewer, reason]
+      properties:
+        timestamp: { type: string, format: date-time }
+        action: { type: string }
+        beforeStatus: { type: string }
+        afterStatus: { type: string }
+        reviewer: { type: string }
+        reason: { type: string }
+    CaseAction:
+      type: object
+      required: [action, reason, revision]
+      properties:
+        action: { type: string, enum: [approve, edit_agency, reject, request_more_information, suppress_unsafe] }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+        revision: { type: integer, minimum: 0 }
+        agencyId: { type: string }
+    WrongRoutingReport:
+      type: object
+      required: [description, agencyId]
+      properties:
+        description: { type: string, minLength: 1, maxLength: 2000 }
+        agencyId: { type: string }
+    ReportReceipt:
+      type: object
+      required: [accepted]
+      properties:
+        accepted: { type: boolean }
+    ResetStaffCasesResponse:
+      type: object
+      required: [resetCaseCount, retainedReportCount, resetAt]
+      properties:
+        resetCaseCount: { type: integer }
+        retainedReportCount: { type: integer }
+        resetAt: { type: string, format: date-time }
+    ResetStaffCasesStatus:
+      type: object
+      required: [lastResetAt, recentResets]
+      properties:
+        lastResetAt: { type: ["string", "null"], format: date-time }
+        recentResets:
+          type: array
+          maxItems: 5
+          items: { $ref: "#/components/schemas/ResetStaffCasesResponse" }
